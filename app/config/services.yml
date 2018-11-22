@@ -1,0 +1,40 @@
+# Learn more about services, parameters and containers at
+# http://symfony.com/doc/current/service_container.html
+parameters:
+    #parameter_name: value
+
+services:
+    #service_name:
+    #    class: AppBundle\Directory\ClassName
+    #    arguments: ['@another_service_name', 'plain_value', '%parameter_name%']
+
+    app.command.wallpaper_setup:
+        class: AppBundle\Command\SetupWallpapersCommand
+        arguments:
+            - "@doctrine.orm.default_entity_manager"
+        tags:
+            - { name: console.command }
+
+
+    app.service.local_filesystem_file_mover:
+        class: AppBundle\Service\LocalFilesystemFileMover
+        arguments:
+            - "@filesystem"
+
+    app.service.split_csv:
+        class: AppBundle\Service\SplitCSVService
+        arguments:
+            - "@doctrine.orm.default_entity_manager"
+
+    app.service.wallpaper_file_path_helper:
+        class: AppBundle\Service\WallpaperFilePathHelper
+        arguments:
+            - "%kernel.root_dir%/../web/images/"
+
+    app.doctrine_event_listener.wallpaper_upload_listener:
+        class: AppBundle\Event\Listener\WallpaperUploadListener
+        arguments:
+            - "@app.service.local_filesystem_file_mover"
+            - "@app.service.wallpaper_file_path_helper"
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
